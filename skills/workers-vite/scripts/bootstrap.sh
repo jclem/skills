@@ -24,7 +24,9 @@ fi
 APP_NAME="$1"
 APP_TITLE="${2:-$(echo "$APP_NAME" | sed 's/-/ /g' | awk '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) substr($i,2)}1')}"
 TOKEN_PREFIX="${3:-$(echo "$APP_NAME" | tr -d '-')}"
-COMPAT_DATE="$(date +%Y-%m-%d)"
+# Use the first day of the current month as a safe compatibility date.
+# Today's date may be ahead of the installed wrangler runtime.
+COMPAT_DATE="$(date +%Y-%m)-01"
 
 # Verify directory is empty (except .git and mise files)
 shopt -s dotglob nullglob
