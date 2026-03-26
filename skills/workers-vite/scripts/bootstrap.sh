@@ -32,7 +32,7 @@ unexpected=()
 for entry in * .*; do
 	[[ $entry == "." || $entry == ".." ]] && continue
 	case "$entry" in
-	.git | mise.toml | .mise.local.toml | .tool-versions | .mise.*.toml) ;;
+	.git | .claude | .agents | mise.toml | .mise.local.toml | .tool-versions | .mise.*.toml | skills-lock.json) ;;
 	*)
 		unexpected+=("$entry")
 		;;
