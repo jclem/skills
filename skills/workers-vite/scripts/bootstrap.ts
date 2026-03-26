@@ -220,12 +220,11 @@ const CSS_REPLACEMENT = `/* ${colorScheme} */
 \t\t}
 \t}`;
 
-const filesToPatch =
-	await $`find . -type f \\( -name '*.ts' -o -name '*.tsx' -o -name '*.json' -o -name '*.jsonc' -o -name '*.toml' -o -name '*.html' -o -name '*.css' \\)`.text();
+const glob = new Bun.Glob("**/*.{ts,tsx,json,jsonc,toml,html,css}");
+const filesToPatch = Array.from(glob.scanSync({ cwd: ".", dot: false }));
 
 let patchCount = 0;
-for (const file of filesToPatch.trim().split("\n")) {
-	if (!file) continue;
+for (const file of filesToPatch) {
 	let content = await Bun.file(file).text();
 	const before = content;
 	content = content.replaceAll("__APP_NAME__", appName);
