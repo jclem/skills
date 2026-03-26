@@ -64,10 +64,9 @@ Uses Tailwind v4's `@theme` directive to bridge CSS custom properties into Tailw
 
 The structure below is the pattern — `@theme` bridges CSS variables to Tailwind, `@layer base` defines the actual colors. **Ask the user what color scheme they prefer before filling in values.** Suggest a few options:
 
-- **Warm neutral** — parchment/cream backgrounds, brown accents (earthy, calm)
-- **Cool gray** — slate/zinc backgrounds, blue accents (professional, modern)
-- **High contrast** — near-white/near-black backgrounds, vivid accent (accessible, sharp)
-- **Custom** — user provides their own palette or brand colors
+- **Folio** — warm parchment/cream backgrounds, earthy brown accent (see `assets/folio.json` for the full theme)
+- **Cool gray** — slate/zinc backgrounds, blue accent (professional, modern)
+- **High contrast** — near-white/near-black backgrounds, violet accent (accessible, sharp)
 
 The variable naming convention (`bg0`–`bg3`, `fg0`–`fg3`, `accent`, `highlight`, `error`, `warn`) stays the same regardless of palette. `bg0` is the page background, `bg3` is the most elevated surface; `fg0` is primary text, `fg3` is the most muted.
 

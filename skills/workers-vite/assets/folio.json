@@ -1,0 +1,83 @@
+{
+  "name": "Folio",
+  "light": {
+    "bg": {
+      "bg0": "#FFFCF5",
+      "bg1": "#F4F1EA",
+      "bg2": "#E8E5DD",
+      "bg3": "#DDDAD2"
+    },
+    "fg": {
+      "fg0": "#2B2924",
+      "fg1": "#4D4A43",
+      "fg2": "#6E6A5F",
+      "fg3": "#9C9889"
+    },
+    "ui": {
+      "accent": "#8B7355",
+      "highlight": "#EDE4D0",
+      "diffAdd": "#D5E0C8",
+      "diffDel": "#E8D0C8",
+      "error": "#A04040",
+      "warn": "#8B7040"
+    },
+    "ansi": {
+      "black": "#2B2924",
+      "red": "#A04040",
+      "green": "#5A7A4A",
+      "yellow": "#8B7040",
+      "blue": "#4A6A8B",
+      "magenta": "#7A5A7A",
+      "cyan": "#4A7A7A",
+      "white": "#F4F1EA",
+      "brBlack": "#6E6A5F",
+      "brRed": "#B85050",
+      "brGreen": "#6E8B5E",
+      "brYellow": "#A08550",
+      "brBlue": "#5E7E9E",
+      "brMagenta": "#8B6E8B",
+      "brCyan": "#5E8B8B",
+      "brWhite": "#FFFCF5"
+    }
+  },
+  "dark": {
+    "bg": {
+      "bg0": "#1C1B18",
+      "bg1": "#252420",
+      "bg2": "#302E29",
+      "bg3": "#3D3A34"
+    },
+    "fg": {
+      "fg0": "#D5D2C8",
+      "fg1": "#B0AD9F",
+      "fg2": "#8A8778",
+      "fg3": "#5E5B50"
+    },
+    "ui": {
+      "accent": "#C4A882",
+      "highlight": "#3A3428",
+      "diffAdd": "#2A3325",
+      "diffDel": "#362525",
+      "error": "#C86060",
+      "warn": "#C4A050"
+    },
+    "ansi": {
+      "black": "#1C1B18",
+      "red": "#C86060",
+      "green": "#8AAA70",
+      "yellow": "#C4A050",
+      "blue": "#7099BB",
+      "magenta": "#A882A8",
+      "cyan": "#70A8A0",
+      "white": "#D5D2C8",
+      "brBlack": "#5E5B50",
+      "brRed": "#D88080",
+      "brGreen": "#A0BB88",
+      "brYellow": "#D4B468",
+      "brBlue": "#88AACC",
+      "brMagenta": "#BB99BB",
+      "brCyan": "#88BBAA",
+      "brWhite": "#EAE8E0"
+    }
+  }
+}
