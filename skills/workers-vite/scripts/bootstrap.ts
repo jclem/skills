@@ -8,18 +8,52 @@ const TEMPLATE_DIR = join(SKILL_DIR, "assets/template");
 const SCRIPTS_DIR = join(SKILL_DIR, "scripts");
 const PROJECT_DIR = process.cwd();
 
-// ── Helpers ──
+// ── Formatting ──
 
-function log(msg: string) {
-	console.log(`\x1b[36m==>\x1b[0m ${msg}`);
+const c = {
+	reset: "\x1b[0m",
+	bold: "\x1b[1m",
+	dim: "\x1b[2m",
+	cyan: "\x1b[36m",
+	green: "\x1b[32m",
+	yellow: "\x1b[33m",
+	red: "\x1b[31m",
+	magenta: "\x1b[35m",
+	gray: "\x1b[90m",
+};
+
+function banner() {
+	console.log("");
+	console.log(
+		`${c.cyan}${c.bold}  ╭──────────────────────────────────╮${c.reset}`,
+	);
+	console.log(
+		`${c.cyan}${c.bold}  │  workers-vite                    │${c.reset}`,
+	);
+	console.log(
+		`${c.cyan}${c.bold}  │${c.reset}${c.dim}  Cloudflare Workers + Vite + React ${c.reset}${c.cyan}${c.bold}│${c.reset}`,
+	);
+	console.log(
+		`${c.cyan}${c.bold}  ╰──────────────────────────────────╯${c.reset}`,
+	);
+	console.log("");
 }
 
-function info(msg: string) {
-	console.log(`    ${msg}`);
+function step(n: number, total: number, msg: string) {
+	const progress = `${c.dim}[${n}/${total}]${c.reset}`;
+	console.log(`\n  ${progress} ${c.cyan}${c.bold}${msg}${c.reset}`);
+}
+
+function done(msg: string) {
+	console.log(`       ${c.green}+${c.reset} ${msg}`);
+}
+
+function detail(msg: string) {
+	console.log(`       ${c.dim}${msg}${c.reset}`);
 }
 
 function warn(msg: string) {
-	console.log(`\x1b[33m    ⚠ ${msg}\x1b[0m`);
+	console.log(`       ${c.yellow}! ${msg}${c.reset}`);
 }
 
 // ── Validate directory ──
@@ -43,13 +77,18 @@ const unexpected = entries
 
 if (unexpected.length > 0) {
 	console.error(
-		"Directory must be empty except for .git, .claude, and mise files. Found:",
+		`\n  ${c.red}Directory must be empty except for .git, .claude, and mise files.${c.reset}`,
 	);
-	for (const name of unexpected) console.error(`  ${name}`);
+	console.error(`  ${c.dim}Found:${c.reset}`);
+	for (const name of unexpected)
+		console.error(`    ${c.red}-${c.reset} ${name}`);
+	console.error("");
 	process.exit(1);
 }
 
 // ── Gather input ──
+
+banner();
 
 const appName = await input({
 	message: "App name (kebab-case)",
@@ -80,7 +119,7 @@ const colorScheme = await select({
 	choices: [
 		{
 			value: "folio",
-			name: "Folio — warm parchment backgrounds, earthy brown accent",
+			name: "Folio — warm parchment, earthy brown accent",
 		},
 		{
 			value: "cool-gray",
@@ -147,20 +186,27 @@ const PALETTES: Record<string, { light: string; dark: string }> = {
 	},
 };
 
-// ── Copy template ──
+// ── Summary ──
+
+const TOTAL_STEPS = 6;
 
 console.log("");
-log(`Creating ${appName} (${appTitle})`);
-info(`Token prefix: ${tokenPrefix}_`);
-info(`Color scheme: ${colorScheme}`);
-console.log("");
+console.log(
+	`  ${c.bold}${appTitle}${c.reset} ${c.dim}(${appName})${c.reset}`,
+);
+console.log(
+	`  ${c.dim}token: ${tokenPrefix}_ ${c.reset}${c.dim}|${c.reset} ${c.dim}theme: ${colorScheme}${c.reset}`,
+);
 
-log("Copying template...");
+// ── Step 1: Copy template ──
+
+step(1, TOTAL_STEPS, "Scaffolding project");
 await $`cp -R ${TEMPLATE_DIR}/. .`.quiet();
+done("Copied template files");
 
-// ── Substitute placeholders ──
+// ── Step 2: Apply configuration ──
 
-log("Applying configuration...");
+step(2, TOTAL_STEPS, "Applying configuration");
 
 const palette = PALETTES[colorScheme];
 const CSS_REPLACEMENT = `/* ${colorScheme} */
@@ -174,16 +220,18 @@ const CSS_REPLACEMENT = `/* ${colorScheme} */
 \t\t}
 \t}`;
 
-const filesToPatch = await $`find . -type f \\( -name '*.ts' -o -name '*.tsx' -o -name '*.json' -o -name '*.jsonc' -o -name '*.toml' -o -name '*.html' -o -name '*.css' \\)`.text();
+const filesToPatch =
+	await $`find . -type f \\( -name '*.ts' -o -name '*.tsx' -o -name '*.json' -o -name '*.jsonc' -o -name '*.toml' -o -name '*.html' -o -name '*.css' \\)`.text();
 
+let patchCount = 0;
 for (const file of filesToPatch.trim().split("\n")) {
 	if (!file) continue;
 	let content = await Bun.file(file).text();
+	const before = content;
 	content = content.replaceAll("__APP_NAME__", appName);
 	content = content.replaceAll("__APP_TITLE__", appTitle);
 	content = content.replaceAll("__TOKEN_PREFIX__", tokenPrefix);
 
-	// Replace color scheme block in CSS
 	if (file.endsWith(".css")) {
 		content = content.replace(
 			/\/\* __COLOR_SCHEME__ \*\/\n\t:root \{[^}]+\}\n\n\t@media \(prefers-color-scheme: dark\) \{\n\t\t:root \{[^}]+\}\n\t\}/s,
@@ -191,17 +239,19 @@ for (const file of filesToPatch.trim().split("\n")) {
 		);
 	}
 
-	await Bun.write(file, content);
+	if (content !== before) {
+		patchCount++;
+		await Bun.write(file, content);
+	}
 }
+done(`Patched ${patchCount} files`);
 
-// ── Install dependencies ──
+// ── Step 3: Install dependencies ──
 
-console.log("");
-log("Installing dependencies...");
-await $`${SCRIPTS_DIR}/install-deps.sh`;
+step(3, TOTAL_STEPS, "Installing dependencies");
+await $`${SCRIPTS_DIR}/install-deps.sh`.quiet();
 
-// ── Set compatibility date from installed wrangler ──
-
+// Extract compat date from installed wrangler
 let compatDate: string;
 const wranglerTemplate = join(
 	PROJECT_DIR,
@@ -211,77 +261,87 @@ const wranglerTemplate = join(
 if (existsSync(wranglerTemplate)) {
 	const templateContent = await Bun.file(wranglerTemplate).text();
 	const match = templateContent.match(/\d{4}-\d{2}-\d{2}/);
-	compatDate = match ? match[0] : `${new Date().toISOString().slice(0, 7)}-01`;
+	compatDate = match
+		? match[0]
+		: `${new Date().toISOString().slice(0, 7)}-01`;
 } else {
 	compatDate = `${new Date().toISOString().slice(0, 7)}-01`;
 }
 
-info(`Compatibility date: ${compatDate}`);
 const wranglerJsonc = await Bun.file("wrangler.jsonc").text();
 await Bun.write(
 	"wrangler.jsonc",
 	wranglerJsonc.replace("__COMPAT_DATE__", compatDate),
 );
 
-// ── Create D1 database ──
+done("Installed packages");
+detail(`Compatibility date: ${compatDate}`);
 
-console.log("");
-log("Creating D1 database...");
+// ── Step 4: Create D1 database ──
 
-let dbId = "";
+step(4, TOTAL_STEPS, "Creating D1 database");
+
 try {
 	const result =
-		await $`bunx wrangler d1 create ${appName}-db 2>&1`.text();
+		await $`bunx wrangler d1 create ${appName}-db 2>&1`.quiet().text();
 	const match = result.match(/"database_id":\s*"([^"]+)"/);
 	if (match) {
-		dbId = match[1];
-		info(`Database ID: ${dbId}`);
+		const dbId = match[1];
 		const content = await Bun.file("wrangler.jsonc").text();
 		await Bun.write("wrangler.jsonc", content.replace("__DB_ID__", dbId));
+		done(`${appName}-db`);
+		detail(dbId);
 	}
 } catch {
-	warn(
-		"Failed to create D1 database. Create it manually and update wrangler.jsonc.",
-	);
+	warn("Could not create D1 database (update wrangler.jsonc manually)");
 }
 
-// ── Generate and apply migration ──
+// ── Step 5: Generate and apply migration ──
 
-console.log("");
-log("Generating initial migration...");
-await $`bunx drizzle-kit generate`;
+step(5, TOTAL_STEPS, "Setting up database schema");
+await $`bunx drizzle-kit generate`.quiet();
+done("Generated initial migration");
+await $`bunx wrangler d1 migrations apply ${appName}-db --local`.quiet();
+done("Applied to local D1");
 
-console.log("");
-log("Applying migration to local D1...");
-await $`bunx wrangler d1 migrations apply ${appName}-db --local`;
+// ── Step 6: Write .dev.vars ──
 
-// ── Write .dev.vars ──
+step(6, TOTAL_STEPS, "Finishing up");
 
 if (setupDevVars && googleClientId && googleClientSecret) {
-	console.log("");
-	log("Writing .dev.vars...");
 	await Bun.write(
 		".dev.vars",
 		`GOOGLE_CLIENT_ID=${googleClientId}\nGOOGLE_CLIENT_SECRET=${googleClientSecret}\n`,
 	);
+	done("Wrote .dev.vars");
 }
 
-// ── Done ──
+done("Project ready");
+
+// ── Final output ──
 
 console.log("");
-log("Done!");
+console.log(
+	`  ${c.green}${c.bold}All done!${c.reset} ${c.dim}Here's what's next:${c.reset}`,
+);
 console.log("");
 
 if (!setupDevVars) {
-	console.log("  Create .dev.vars with your Google OAuth credentials:");
-	console.log("    GOOGLE_CLIENT_ID=...");
-	console.log("    GOOGLE_CLIENT_SECRET=...");
+	console.log(`  ${c.yellow}1.${c.reset} Create ${c.bold}.dev.vars${c.reset} with your Google OAuth credentials:`);
+	console.log(`     ${c.dim}GOOGLE_CLIENT_ID=...${c.reset}`);
+	console.log(`     ${c.dim}GOOGLE_CLIENT_SECRET=...${c.reset}`);
 	console.log("");
+	console.log(`  ${c.yellow}2.${c.reset} Start developing:`);
+} else {
+	console.log(`  ${c.yellow}1.${c.reset} Start developing:`);
 }
 
-console.log("  Start the dev server:");
-console.log("    mise run dev");
+console.log(`     ${c.bold}mise run dev${c.reset}`);
 console.log("");
-console.log("  When ready, apply migrations to production:");
-console.log("    mise run db:migrate remote");
+console.log(
+	`  ${c.dim}When ready to deploy:  mise run db:migrate remote${c.reset}`,
+);
+console.log(
+	`  ${c.dim}                       mise run deploy${c.reset}`,
+);
 console.log("");
