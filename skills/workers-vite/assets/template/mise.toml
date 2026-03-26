@@ -1,0 +1,42 @@
+[tools]
+bun = "latest"
+
+[tasks.build]
+depends = ["check"]
+run = "bun run build"
+
+[tasks.dev]
+run = "bun run dev"
+
+[tasks.deploy]
+depends = ["build"]
+run = "bunx wrangler deploy"
+
+[tasks.check]
+depends = ["check:lint", "check:types"]
+
+[tasks."check:lint"]
+run = "bunx biome check ."
+
+[tasks."check:types"]
+run = "bunx tsc --noEmit"
+
+[tasks.fix]
+run = "bunx biome check --write ."
+
+[tasks.tail]
+run = "bunx wrangler tail"
+
+[tasks."db:generate"]
+run = "bunx drizzle-kit generate"
+
+[tasks."db:migrate"]
+usage = """
+arg "<target>" {
+  choices "local" "remote"
+}
+"""
+run = "bunx wrangler d1 migrations apply __APP_NAME__-db --${usage_target}"
+
+[tasks.pre-commit]
+depends = ["check"]

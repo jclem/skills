@@ -1,0 +1,18 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "__APP_NAME__",
+	"compatibility_date": "__COMPAT_DATE__",
+	"main": "src/server/index.ts",
+	"assets": {
+		"directory": "./dist/client",
+		"binding": "ASSETS"
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "__APP_NAME__-db",
+			"database_id": "__DB_ID__",
+			"migrations_dir": "migrations"
+		}
+	]
+}

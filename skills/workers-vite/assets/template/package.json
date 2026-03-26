@@ -1,0 +1,11 @@
+{
+	"name": "__APP_NAME__",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "vite dev",
+		"build": "vite build",
+		"check": "biome check .",
+		"check:fix": "biome check --write ."
+	}
+}
