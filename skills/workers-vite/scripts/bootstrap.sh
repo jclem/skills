@@ -24,11 +24,8 @@ fi
 APP_NAME="$1"
 APP_TITLE="${2:-$(echo "$APP_NAME" | sed 's/-/ /g' | awk '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) substr($i,2)}1')}"
 TOKEN_PREFIX="${3:-$(echo "$APP_NAME" | tr -d '-')}"
-# Use the first day of the current month as a safe compatibility date.
-# Today's date may be ahead of the installed wrangler runtime.
-COMPAT_DATE="$(date +%Y-%m)-01"
 
-# Verify directory is empty (except .git and mise files)
+# Verify directory is empty (except .git, mise, and claude files)
 shopt -s dotglob nullglob
 unexpected=()
 for entry in * .*; do
@@ -50,25 +47,31 @@ fi
 
 echo "==> Creating $APP_NAME ($APP_TITLE)"
 echo "    Token prefix: ${TOKEN_PREFIX}_"
-echo "    Compat date:  $COMPAT_DATE"
 echo ""
 
 # Copy template
 cp -R "$TEMPLATE_DIR"/. .
 
-# Substitute placeholders
+# Substitute placeholders (except __COMPAT_DATE__ and __DB_ID__ which are set later)
 find . -type f \( -name '*.ts' -o -name '*.tsx' -o -name '*.json' -o -name '*.jsonc' -o -name '*.toml' -o -name '*.html' -o -name '*.css' \) | while read -r file; do
 	sed -i '' \
 		-e "s/__APP_NAME__/$APP_NAME/g" \
 		-e "s/__APP_TITLE__/$APP_TITLE/g" \
 		-e "s/__TOKEN_PREFIX__/$TOKEN_PREFIX/g" \
-		-e "s/__COMPAT_DATE__/$COMPAT_DATE/g" \
 		"$file"
 done
 
 # Install dependencies
 echo "==> Installing dependencies..."
 "$SCRIPT_DIR/install-deps.sh"
+
+# Extract the compatibility date that wrangler ships in its own templates
+COMPAT_DATE="$(grep -ohE '[0-9]{4}-[0-9]{2}-[0-9]{2}' node_modules/wrangler/templates/remoteBindings/wrangler.jsonc 2>/dev/null | head -1)"
+if [[ -z "$COMPAT_DATE" ]]; then
+	COMPAT_DATE="$(date +%Y-%m)-01"
+fi
+echo "    Compat date:  $COMPAT_DATE"
+sed -i '' "s/__COMPAT_DATE__/$COMPAT_DATE/g" wrangler.jsonc
 
 # Create D1 database
 echo ""
