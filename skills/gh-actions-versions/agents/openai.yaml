@@ -1,0 +1,4 @@
+interface:
+  display_name: "GH Actions Versions"
+  short_description: "Keep GitHub Actions pinned and fresh"
+  default_prompt: "Use $gh-actions-versions to pin, verify, and update GitHub Actions workflow dependencies."
