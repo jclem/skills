@@ -1,0 +1,4 @@
+interface:
+  display_name: "Git Commit"
+  short_description: "Write clean imperative commit messages"
+  default_prompt: "Use $git-commit to draft or review a Git commit message."
